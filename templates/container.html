@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Контейнер - Whatsminer M50 Monitoring</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1><a href="/">Whatsminer M50 Monitoring System</a></h1>
+            <nav>
+                <a href="/">Обзор</a>
+                <a href="/containers">Контейнеры</a>
+            </nav>
+        </header>
+
+        <main>
+            <section class="container-header">
+                <h2 id="container-name">Контейнер</h2>
+                <p id="container-description"></p>
+                <button onclick="loadContainerData()">Обновить</button>
+            </section>
+
+            <section class="container-stats">
+                <h3>Статистика контейнера</h3>
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <h4>Всего майнеров</h4>
+                        <p id="container-total-miners">-</p>
+                    </div>
+                    <div class="stat-card">
+                        <h4>Активных майнеров</h4>
+                        <p id="container-active-miners">-</p>
+                    </div>
+                    <div class="stat-card">
+                        <h4>Общий хешрейт</h4>
+                        <p id="container-total-hashrate">-</p>
+                    </div>
+                    <div class="stat-card">
+                        <h4>Средняя температура</h4>
+                        <p id="container-avg-temperature">-</p>
+                    </div>
+                    <div class="stat-card">
+                        <h4>Среднее потребление</h4>
+                        <p id="container-avg-power">-</p>
+                    </div>
+                </div>
+            </section>
+
+            <section class="miners-in-container">
+                <h3>Майнеры в контейнере</h3>
+                <div id="miners-list" class="miners-grid"></div>
+            </section>
+
+            <section class="charts-section">
+                <h3>Графики контейнера</h3>
+                <div class="chart-controls">
+                    <select id="chart-metric" onchange="updateCharts()">
+                        <option value="hash_rate">Общий хешрейт</option>
+                        <option value="temperature">Средняя температура</option>
+                        <option value="power_consumption">Среднее потребление</option>
+                    </select>
+                    <input type="number" id="chart-hours" value="24" min="1" max="168" onchange="updateCharts()">
+                    <label>часов</label>
+                </div>
+                <canvas id="container-chart"></canvas>
+            </section>
+        </main>
+    </div>
+
+    <script src="/static/js/container.js"></script>
+</body>
+</html>
