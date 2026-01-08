@@ -16,6 +16,7 @@ from models import (
 )
 from monitoring_service import MonitoringService
 from config import settings
+from miner_models import get_manufacturers, get_models_by_manufacturer, is_valid_manufacturer, is_valid_model
 
 # Настройка логирования
 logging.basicConfig(
@@ -147,6 +148,8 @@ def create_miner(miner: MinerCreate, db: Session = Depends(get_db)):
         name=miner.name,
         ip_address=miner.ip_address,
         port=miner.port,
+        manufacturer=miner.manufacturer,
+        model=miner.model,
         container_id=miner.container_id,
         is_active=miner.is_active
     )
@@ -183,6 +186,22 @@ def get_miners(
             response.container_name = miner.container.name
         result.append(response)
     return result
+
+
+# ============ MINER MODELS API (должны быть перед /api/miners/{miner_id}) ============
+
+@app.get("/api/miners/manufacturers")
+def get_manufacturers_list():
+    """Получение списка производителей"""
+    return {"manufacturers": get_manufacturers()}
+
+
+@app.get("/api/miners/models/{manufacturer}")
+def get_models_list(manufacturer: str):
+    """Получение списка моделей для указанного производителя"""
+    if not is_valid_manufacturer(manufacturer):
+        raise HTTPException(status_code=404, detail=f"Manufacturer '{manufacturer}' not found")
+    return {"manufacturer": manufacturer, "models": get_models_by_manufacturer(manufacturer)}
 
 
 @app.get("/api/miners/{miner_id}", response_model=MinerResponse)

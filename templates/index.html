@@ -65,6 +65,7 @@
                             <tr>
                                 <th>ID</th>
                                 <th>Название</th>
+                                <th>Производитель/Модель</th>
                                 <th>IP адрес</th>
                                 <th>Контейнер</th>
                                 <th>Хешрейт</th>
@@ -124,6 +125,18 @@
             <form id="add-miner-form" onsubmit="addMiner(event)">
                 <label>Название:</label>
                 <input type="text" name="name" required>
+                <label>Производитель:</label>
+                <select name="manufacturer" id="miner-manufacturer" onchange="updateMinerModels()">
+                    <option value="">Выберите производителя</option>
+                    <option value="Whatsminer">Whatsminer</option>
+                    <option value="AntMiner">AntMiner</option>
+                    <option value="Avalon">Avalon</option>
+                    <option value="Elhapex">Elhapex</option>
+                </select>
+                <label>Модель:</label>
+                <select name="model" id="miner-model" disabled>
+                    <option value="">Сначала выберите производителя</option>
+                </select>
                 <label>IP адрес:</label>
                 <input type="text" name="ip_address" required>
                 <label>Порт:</label>

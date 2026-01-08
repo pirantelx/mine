@@ -72,7 +72,7 @@ curl -X POST "http://localhost:8000/api/containers" \
 
 Через веб-интерфейс:
 - Нажмите "Добавить майнер"
-- Укажите название, IP адрес, порт (по умолчанию 4028) и выберите контейнер
+- Укажите название, выберите производителя и модель, IP адрес, порт (по умолчанию 4028) и выберите контейнер
 
 Через API:
 ```bash
@@ -82,10 +82,18 @@ curl -X POST "http://localhost:8000/api/miners" \
     "name": "Miner-001",
     "ip_address": "192.168.1.100",
     "port": 4028,
+    "manufacturer": "Whatsminer",
+    "model": "M50",
     "container_id": 1,
     "is_active": true
   }'
 ```
+
+**Доступные производители и модели:**
+- **Whatsminer**: M10, M20, M21, M30, M31, M50, M53, M56, M60, M63
+- **AntMiner**: S9, S11, S15, S17, S19, S21, T9, T15, T17, T19, T21, L3+, L7, E9 Pro и другие
+- **Avalon**: Miner 721, 741, 761, 821, 841, 851, 921, 1026, 1047, 1066, 1126 Pro, 1166 Pro, 1246, 1266
+- **Elhapex**: E10, E11, E12, E20, E21, E30, E50
 
 ### 3. Мониторинг
 
@@ -121,6 +129,8 @@ curl -X POST "http://localhost:8000/api/miners/1/poll"
 - `PUT /api/miners/{id}` - Обновление майнера
 - `DELETE /api/miners/{id}` - Удаление майнера
 - `POST /api/miners/{id}/poll` - Ручной опрос майнера
+- `GET /api/miners/manufacturers` - Список производителей
+- `GET /api/miners/models/{manufacturer}` - Список моделей для производителя
 
 ### Статистика
 
@@ -134,7 +144,7 @@ curl -X POST "http://localhost:8000/api/miners/1/poll"
   - id, name, description, location, created_at
 
 - **miners** - Майнеры
-  - id, name, ip_address, port, container_id, is_active, created_at, last_seen
+  - id, name, ip_address, port, manufacturer, model, container_id, is_active, created_at, last_seen
 
 - **miner_stats** - Статистика майнеров
   - id, miner_id, timestamp

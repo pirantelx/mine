@@ -98,9 +98,13 @@ async function loadMiners() {
         
         miners.forEach(miner => {
             const row = document.createElement('tr');
+            const manufacturerModel = miner.manufacturer && miner.model 
+                ? `${miner.manufacturer} ${miner.model}` 
+                : (miner.manufacturer || '-');
             row.innerHTML = `
                 <td>${miner.id}</td>
                 <td>${miner.name}</td>
+                <td>${manufacturerModel}</td>
                 <td>${miner.ip_address}:${miner.port}</td>
                 <td>${miner.container_name || '-'}</td>
                 <td>-</td>
@@ -137,9 +141,10 @@ async function loadLatestStats(minerId, row) {
         if (stats.length > 0) {
             const stat = stats[0];
             const cells = row.querySelectorAll('td');
-            cells[4].textContent = formatHashrate(stat.hash_rate);
-            cells[5].textContent = stat.temperature ? `${stat.temperature.toFixed(1)}°C` : '-';
-            cells[6].textContent = new Date(stat.timestamp).toLocaleString('ru-RU');
+            // Пропускаем ID, название, производитель/модель, IP, контейнер (0-4), данные начинаются с 5
+            cells[5].textContent = formatHashrate(stat.hash_rate);
+            cells[6].textContent = stat.temperature ? `${stat.temperature.toFixed(1)}°C` : '-';
+            cells[7].textContent = new Date(stat.timestamp).toLocaleString('ru-RU');
         }
     } catch (error) {
         console.error(`Error loading stats for miner ${minerId}:`, error);
@@ -259,6 +264,36 @@ async function addContainer(event) {
     }
 }
 
+// Загрузка моделей майнеров
+async function updateMinerModels() {
+    const manufacturerSelect = document.getElementById('miner-manufacturer');
+    const modelSelect = document.getElementById('miner-model');
+    const manufacturer = manufacturerSelect.value;
+    
+    if (!manufacturer) {
+        modelSelect.innerHTML = '<option value="">Сначала выберите производителя</option>';
+        modelSelect.disabled = true;
+        return;
+    }
+    
+    try {
+        const response = await fetch(`${API_BASE}/miners/models/${encodeURIComponent(manufacturer)}`);
+        const data = await response.json();
+        
+        modelSelect.innerHTML = '<option value="">Выберите модель</option>';
+        data.models.forEach(model => {
+            const option = document.createElement('option');
+            option.value = model;
+            option.textContent = model;
+            modelSelect.appendChild(option);
+        });
+        modelSelect.disabled = false;
+    } catch (error) {
+        console.error('Error loading models:', error);
+        modelSelect.innerHTML = '<option value="">Ошибка загрузки моделей</option>';
+    }
+}
+
 // Добавление майнера
 async function addMiner(event) {
     event.preventDefault();
@@ -272,6 +307,8 @@ async function addMiner(event) {
             },
             body: JSON.stringify({
                 name: formData.get('name'),
+                manufacturer: formData.get('manufacturer') || null,
+                model: formData.get('model') || null,
                 ip_address: formData.get('ip_address'),
                 port: parseInt(formData.get('port')) || 4028,
                 container_id: formData.get('container_id') ? parseInt(formData.get('container_id')) : null,
@@ -282,10 +319,15 @@ async function addMiner(event) {
         if (response.ok) {
             closeModal('add-miner-modal');
             event.target.reset();
+            // Сброс полей производителя и модели
+            document.getElementById('miner-manufacturer').value = '';
+            document.getElementById('miner-model').innerHTML = '<option value="">Сначала выберите производителя</option>';
+            document.getElementById('miner-model').disabled = true;
             loadMiners();
             loadOverview();
         } else {
-            alert('Ошибка при добавлении майнера');
+            const errorData = await response.json().catch(() => ({}));
+            alert(`Ошибка при добавлении майнера: ${errorData.detail || 'Неизвестная ошибка'}`);
         }
     } catch (error) {
         console.error('Error adding miner:', error);

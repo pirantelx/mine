@@ -26,6 +26,8 @@ class Miner(Base):
     name = Column(String, index=True, nullable=False)
     ip_address = Column(String, nullable=False)
     port = Column(Integer, default=4028)
+    manufacturer = Column(String, nullable=True, index=True)  # AntMiner, Avalon, Elhapex, Whatsminer
+    model = Column(String, nullable=True, index=True)  # Модель майнера
     container_id = Column(Integer, ForeignKey("containers.id"), nullable=True)
     is_active = Column(Boolean, default=True)
     created_at = Column(DateTime, default=datetime.utcnow)

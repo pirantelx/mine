@@ -25,6 +25,8 @@ class MinerCreate(BaseModel):
     name: str
     ip_address: str
     port: int = 4028
+    manufacturer: Optional[str] = None  # AntMiner, Avalon, Elhapex, Whatsminer
+    model: Optional[str] = None
     container_id: Optional[int] = None
     is_active: bool = True
 
@@ -33,6 +35,8 @@ class MinerUpdate(BaseModel):
     name: Optional[str] = None
     ip_address: Optional[str] = None
     port: Optional[int] = None
+    manufacturer: Optional[str] = None
+    model: Optional[str] = None
     container_id: Optional[int] = None
     is_active: Optional[bool] = None
 
@@ -42,6 +46,8 @@ class MinerResponse(BaseModel):
     name: str
     ip_address: str
     port: int
+    manufacturer: Optional[str] = None
+    model: Optional[str] = None
     container_id: Optional[int]
     is_active: bool
     created_at: datetime
