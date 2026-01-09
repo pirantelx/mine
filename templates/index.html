@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Whatsminer M50 Monitoring System</title>
+    <title>Miners Monitoring System</title>
     <link rel="stylesheet" href="/static/css/style.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/date-fns@2.30.0/index.min.js"></script>
@@ -11,10 +11,14 @@
 <body>
     <div class="container">
         <header>
-            <h1>Whatsminer M50 Monitoring System</h1>
+            <h1>Miners Monitoring System</h1>
             <nav>
                 <a href="/">Обзор</a>
+                <a href="/sites">Площадки</a>
                 <a href="/containers">Контейнеры</a>
+                <a href="#" onclick="showPoolsSection(); return false;">Пулы</a>
+                <span id="user-info" style="margin-left: auto; color: white;"></span>
+                <button onclick="logout()" style="margin-left: 10px; padding: 5px 15px;">Выход</button>
             </nav>
         </header>
 
@@ -41,6 +45,15 @@
                 </div>
             </section>
 
+            <section class="sites-section">
+                <h2>Площадки</h2>
+                <div class="controls">
+                    <button onclick="refreshSites()">Обновить</button>
+                    <button id="add-site-btn" onclick="showAddSiteModal()" style="display: none;">Добавить площадку</button>
+                </div>
+                <div id="sites-list" class="sites-grid"></div>
+            </section>
+
             <section class="containers-section">
                 <h2>Контейнеры</h2>
                 <div class="controls">
@@ -53,11 +66,21 @@
             <section class="miners-section">
                 <h2>Майнеры</h2>
                 <div class="controls">
+                    <select id="site-filter" onchange="loadMiners()">
+                        <option value="">Все площадки</option>
+                    </select>
                     <select id="container-filter" onchange="loadMiners()">
                         <option value="">Все контейнеры</option>
                     </select>
+                    <select id="pool-filter" onchange="loadMiners()">
+                        <option value="">Все пулы</option>
+                    </select>
+                    <select id="tag-filter" onchange="loadMiners()">
+                        <option value="">Все теги</option>
+                    </select>
                     <button onclick="refreshMiners()">Обновить</button>
                     <button onclick="showAddMinerModal()">Добавить майнер</button>
+                    <button id="scan-network-btn" onclick="showScanNetworkModal()" style="display: none;">Сканировать сеть</button>
                 </div>
                 <div id="miners-table-container">
                     <table id="miners-table" class="miners-table">
@@ -68,6 +91,7 @@
                                 <th>Производитель/Модель</th>
                                 <th>IP адрес</th>
                                 <th>Контейнер</th>
+                                <th>Пул</th>
                                 <th>Хешрейт</th>
                                 <th>Температура</th>
                                 <th>Последнее обновление</th>
@@ -145,11 +169,92 @@
                 <select name="container_id">
                     <option value="">Не выбран</option>
                 </select>
+                <label>Пул:</label>
+                <select name="pool_id">
+                    <option value="">Не выбран</option>
+                </select>
+                <label>Площадка:</label>
+                <select name="site_id" id="miner-site-select" onchange="updateContainersBySite()">
+                    <option value="">Не выбрана</option>
+                </select>
+                <label>Теги (через запятую):</label>
+                <input type="text" name="tags" placeholder="например: клиент1, владелец2">
                 <button type="submit">Добавить</button>
             </form>
         </div>
     </div>
 
+    <div id="add-site-modal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('add-site-modal')">&times;</span>
+            <h2>Добавить площадку</h2>
+            <form id="add-site-form" onsubmit="addSite(event)">
+                <label>Название:</label>
+                <input type="text" name="name" required>
+                <label>Описание:</label>
+                <textarea name="description"></textarea>
+                <label>Местоположение:</label>
+                <input type="text" name="location">
+                <button type="submit">Добавить</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="pools-section" class="section" style="display: none;">
+        <h2>Пулы</h2>
+        <div class="controls">
+            <button onclick="loadPools()">Обновить</button>
+            <button id="add-pool-btn" onclick="showAddPoolModal()" style="display: none;">Добавить пул</button>
+        </div>
+        <div id="pools-list" class="containers-grid"></div>
+    </div>
+
+    <div id="add-pool-modal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('add-pool-modal')">&times;</span>
+            <h2>Добавить пул</h2>
+            <form id="add-pool-form" onsubmit="addPool(event)">
+                <label>Название:</label>
+                <input type="text" name="name" required>
+                <label>Описание:</label>
+                <textarea name="description"></textarea>
+                <button type="submit">Добавить</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="scan-network-modal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('scan-network-modal')">&times;</span>
+            <h2>Сканирование сети</h2>
+            <form id="scan-network-form" onsubmit="scanNetwork(event)">
+                <label>Сеть (CIDR):</label>
+                <input type="text" name="network" placeholder="192.168.1.0/24" required>
+                <label>Порт:</label>
+                <input type="number" name="port" value="4028">
+                <label>Таймаут (сек):</label>
+                <input type="number" name="timeout" value="2.0" step="0.1">
+                <button type="submit">Сканировать</button>
+            </form>
+            <div id="scan-results" style="margin-top: 20px; display: none;">
+                <h3>Найденные майнеры:</h3>
+                <div id="discovered-miners-list"></div>
+                <div style="margin-top: 10px;">
+                    <label>Добавить в пул:</label>
+                    <select id="add-to-pool-select">
+                        <option value="">Не добавлять в пул</option>
+                    </select>
+                    <label>Добавить в контейнер:</label>
+                    <select id="add-to-container-select">
+                        <option value="">Не добавлять в контейнер</option>
+                    </select>
+                    <button onclick="addDiscoveredMiners()">Добавить выбранные</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script src="/static/js/app.js"></script>
+    <script src="/static/js/sites.js"></script>
 </body>
 </html>

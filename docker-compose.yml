@@ -1,0 +1,54 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:15-alpine
+    container_name: miners_monitoring_db
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-miners_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-miners_password}
+      POSTGRES_DB: ${POSTGRES_DB:-miners_monitoring}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-miners_user}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - miners_network
+
+  app:
+    build: .
+    container_name: miners_monitoring_app
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-miners_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-miners_password}
+      POSTGRES_DB: ${POSTGRES_DB:-miners_monitoring}
+      DATABASE_URL: postgresql://${POSTGRES_USER:-miners_user}:${POSTGRES_PASSWORD:-miners_password}@db:5432/${POSTGRES_DB:-miners_monitoring}
+      DEFAULT_MINER_PORT: ${DEFAULT_MINER_PORT:-4028}
+      CONNECTION_TIMEOUT: ${CONNECTION_TIMEOUT:-5.0}
+      POLLING_INTERVAL: ${POLLING_INTERVAL:-60}
+      MAX_WORKERS: ${MAX_WORKERS:-50}
+      API_HOST: ${API_HOST:-0.0.0.0}
+      API_PORT: ${API_PORT:-8000}
+    ports:
+      - "${API_PORT:-8000}:8000"
+    volumes:
+      - ./data:/app/data  # Для SQLite, если будет использоваться
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - miners_network
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+    driver: local
+
+networks:
+  miners_network:
+    driver: bridge

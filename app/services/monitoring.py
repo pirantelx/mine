@@ -5,9 +5,9 @@ from typing import List, Dict, Any
 from sqlalchemy.orm import Session
 from concurrent.futures import ThreadPoolExecutor
 
-from database import Miner, MinerStats, Container, init_db, get_session_maker
-from miner_client import WhatsminerClient, parse_summary_data, parse_stats_data
-from config import settings
+from app.database import Miner, MinerStats, Container, init_db, get_session_maker
+from app.services.miner_client import WhatsminerClient, parse_summary_data, parse_stats_data
+from app.config import settings
 
 logger = logging.getLogger(__name__)
 

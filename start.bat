@@ -1,4 +1,4 @@
 @echo off
-echo Starting Whatsminer M50 Monitoring System...
-python main.py
+echo Starting Miners Monitoring System...
+python run.py
 pause

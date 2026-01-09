@@ -1,0 +1,7 @@
+{
+    "server_url": "http://your-server-ip:8000",
+    "api_key": "your-api-key-here",
+    "network_cidr": "192.168.1.0/24",
+    "scan_interval": 300,
+    "poll_interval": 60
+}

@@ -3,8 +3,11 @@ from typing import List, Optional
 
 
 class Settings(BaseSettings):
-    # Database
+    # Database - читается из переменной окружения DATABASE_URL, если не задана - используется SQLite
     database_url: str = "sqlite:///./miners_monitoring.db"
+    
+    # Security
+    secret_key: str = "change-this-secret-key-in-production-please-use-strong-random-key"
     
     # TCP Settings
     default_miner_port: int = 4028
@@ -21,6 +24,7 @@ class Settings(BaseSettings):
     
     class Config:
         env_file = ".env"
+        case_sensitive = False
 
 
 settings = Settings()
